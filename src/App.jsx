@@ -1,17 +1,13 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import { Button } from 'antd';
-import './App.css'
+import LandingPage from './landing_page'
+import HomePage from './home_page'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [user, setUser] = useState(null)
 
-  return (
-    <>
-      <Button type="primary">Primary Button</Button>
-    </>
-  )
+  if (user) {
+    return <HomePage user={user} onLogout={() => setUser(null)} />
+  }
+
+  return <LandingPage onSubmit={(values) => setUser(values)} />
 }
-
-export default App
