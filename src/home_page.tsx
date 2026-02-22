@@ -1,6 +1,7 @@
 import { Tabs, Typography, Button, Card, Input, Row, Col, Image} from 'antd'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import ReactMarkdown from 'react-markdown'
 
 const { Title, Text } = Typography
 
@@ -26,6 +27,9 @@ interface Course {
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
   const [geminiPrompt, setGeminiPrompt] = useState('')
+  const [geminiResponse, setGeminiResponse] = useState('')
+  const [geminiCourses, setGeminiCourses] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [events, setEvents] = useState([])
   const [courses, setCourses] = useState<Course[]>([])
   const [catalog, setCatalog] = useState([])
@@ -61,21 +65,60 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
     }
   }
 
-  // const LoadCourseCatalog = async () => {
-  //   const result = await axios.get("http://127.0.0.1:5000/fetch-course-catalog")
+  const askGemini = async () => {
+    if (!geminiPrompt.trim()) return;
+    setIsLoading(true);
+    try {
 
-  //   const catalog = result.data.data
+      const response = await axios.post("http://127.0.0.1:5000/chat", {
+        message: geminiPrompt
+      });
+      setGeminiResponse(response.data.response);
+    } catch (error) {
+      setGeminiResponse("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  //   if (catalog[0]) {
-  //     setCatalog(catalog)
-  //   }
-  // }
+  const askAboutCourses = async () => {
+    setIsLoading(true);
+    try {
+
+      const response = await axios.post("http://127.0.0.1:5000/recommend-courses", {
+        course_history: courses,
+        course_catalog: catalog
+      });
+      setGeminiCourses(response.data.response || "No recommendations found.");
+      console.log(response.data.response);
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const LoadCourseCatalog = async () => {
+    const result = await axios.get("http://127.0.0.1:5000/fetch-course-catalog")
+
+    const catalog = result.data.data
+    console.log(catalog); 
+
+    if (catalog[0]) {
+      setCatalog(catalog)
+    }
+  }
 
   useEffect(() => {
     LoadEvents();
-    // LoadCourseCatalog
-    LoadCourses(); 
+    LoadCourseCatalog();
+    LoadCourses();
   }, []);
+
+  useEffect(() => {
+    if (courses.length > 0 && catalog.length > 0) {
+      askAboutCourses();
+    }
+  }, [courses, catalog]);
 
 
   return (
@@ -133,6 +176,15 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               children: (
                 <>
                   <Title level={4}>Roadmap</Title>
+                  {/* AI Advisor Section */}
+                  <Title level={5} style={{ marginTop: 8, color: '#981E32' }}>Your AI Advisor</Title>
+                  {geminiCourses ? (
+                    <Card style={{ marginBottom: 16 }}>
+                      <ReactMarkdown>{typeof geminiCourses === 'string' ? geminiCourses : JSON.stringify(geminiCourses)}</ReactMarkdown>
+                    </Card>
+                  ) : (
+                    <Text type="secondary">AI course recommendations will appear here.</Text>
+                  )}
                   {/* Enrolled courses */}
                   <Title level={5}>Currently Enrolled</Title>
                   {courses.filter(c => c.course_status === 'Enrolled').length === 0 ? (
@@ -221,72 +273,50 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                 </>
               ),
             },
+            {
+              key: 'assistant',
+              label: 'Gemini Assistant',
+              children: (
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <Title level={4}>Gemini Assistant</Title>
+                    <Text type="secondary">
+                      Ask about events, clubs, resources, or anything WSU related.
+                    </Text>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Button onClick={() => setGeminiPrompt('I want to get more involved in student clubs.')}>Student clubs</Button>
+                      <Button onClick={() => setGeminiPrompt('I want to get more involved with upcoming events.')}>Upcoming events</Button>
+                      <Button onClick={() => setGeminiPrompt('I want to connect with professors at WSU within my major.')}>Connect with professors</Button>
+                      <Button onClick={() => setGeminiPrompt('I want to get involved with more student programs.')}>Student programs</Button>
+                    </div>
+                    <Input.TextArea
+                      placeholder="Ask Gemini..."
+                      value={geminiPrompt}
+                      onChange={(e) => setGeminiPrompt(e.target.value)}
+                      rows={3}
+                    />
+                    <Button
+                      type="primary"
+                      loading={isLoading}
+                      onClick={askGemini}
+                      style={{ backgroundColor: '#981E32', borderColor: '#981E32', fontWeight: 600 }}
+                    >
+                      Ask
+                    </Button>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    {geminiResponse && (
+                      <Card style={{ maxHeight: 550, overflowY: 'auto' }}>
+                        <ReactMarkdown>{geminiResponse}</ReactMarkdown>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              ),
+            },
           ]}
         />
 
-        {/* Gemini Assistant */}
-        <div
-
-         // Keeps the assistant fixed to the bottom right of the screen
-        style={{
-          position: 'fixed',
-          bottom: 30,
-          right: 30,
-          width: 300,
-
-          // Ensures it appears above other elements
-          zIndex:1000, 
-        }}
-      >
-        <Card
-          size="small"
-          title="Gemini"
-          style={{
-            borderRadius: 12,
-            // Soft shadow to make it look elevated
-            boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
-          }}
-        >
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get more involved in student clubs.
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get more involved with upcoming events
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to connect with professors at WSU within my major
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get involved with more student programs
-            </Button>
-          </div>
-
-          {/* Input field where the user types their question */}
-          <Input
-            size="small"
-            placeholder="Ask Gemini..."
-            style={{ marginBottom: 8 }}
-            value={geminiPrompt}
-            onChange={(e) => setGeminiPrompt(e.target.value)}
-          />
-          {/* Button to submit the question to gemini*/}
-          <Button
-            type="primary"
-            size="small"
-            block
-            style={{
-              // WSU colors
-              backgroundColor: '#981E32',
-              borderColor: '#981E32',
-              fontWeight: 600,
-            }}
-          >
-            Ask
-          </Button>
-        </Card>
-      </div>
-      
         {/* Logout button resets user state and sends them back to landing page */}
         <Button
           style={{ marginTop: 20 }}

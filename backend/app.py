@@ -175,6 +175,35 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/recommend-courses", methods=["POST"])
+def recommend_courses():
+    try:
+        data = request.get_json()
+        course_history = data.get("course_history")
+        course_catalog = data.get("course_catalog")
+
+
+        system_instruction = f"""
+            You are a helpful academic advisor assistant for Washington State Univesity students.
+            When asked about courses I need to take next, compare the student's course history with the course catalog.
+            It will be noted as an array: 
+            - {course_history}
+            - {course_catalog}
+            - Then, provide recommendations on what courses they could take next based on the courses they have already taken and passed.
+            - Return the information in a helpful and informative way. Label very specifically what the user needs to take next, what the prerequistes are, and where they can find more information about the course.
+            """
+        response = client.models.generate_content(
+            model = "gemini-2.5-flash",
+            contents = f"Course history: {course_history}\nCourse catalog: {course_catalog}",
+            config = types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            )
+        )
+
+        return jsonify({"response": response.text}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
