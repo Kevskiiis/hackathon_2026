@@ -1,5 +1,6 @@
-import { Tabs, Typography, Button, Card, Input, Row, Col, Image} from 'antd'
-import { useState, useEffect } from 'react'
+import { Tabs, Typography, Button, Card, Input } from 'antd'
+import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import axios from 'axios'
 
 const { Title, Text } = Typography
@@ -16,6 +17,8 @@ interface Event {
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
   const [geminiPrompt, setGeminiPrompt] = useState('')
+  const [geminiResponse, setGeminiResponse] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [events, setEvents] = useState([])
   const [courses, setCourses] = useState([]) 
 
@@ -56,6 +59,23 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
   }, []);
 
 
+  // This function sends the message to Flask and gets Gemini's response
+  const askGemini = async () => {
+    if (!geminiPrompt.trim()) return  // don't send empty messages
+    setIsLoading(true)
+
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/chat", {
+        message: geminiPrompt
+      })
+      setGeminiResponse(response.data.response)
+    } catch (error) {
+      setGeminiResponse("Something went wrong. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
   return (
     <div
       style={{
@@ -180,7 +200,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             // Soft shadow to make it look elevated
             boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
           }}
-        >
+        > 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
             <Button size="small" onClick={() => setGeminiPrompt('')}>
               I want to get more involved in student clubs.
@@ -209,6 +229,8 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             type="primary"
             size="small"
             block
+            loading ={isLoading}
+            onClick={askGemini}
             style={{
               // WSU colors
               backgroundColor: '#981E32',
@@ -218,6 +240,12 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
           >
             Ask
           </Button>
+            {/* Response area - only shows when there is a response */}
+            {geminiResponse && (
+              <div style={{ marginTop: 12, maxHeight: 200, overflowY: 'auto', fontSize: 12 }}>
+              <ReactMarkdown>{geminiResponse}</ReactMarkdown>
+              </div>
+            )}
         </Card>
       </div>
       
