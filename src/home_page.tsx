@@ -21,8 +21,6 @@ interface Course {
   course_status: 'Enrolled' | 'Passed' | 'Failed' | 'Withdrawed';
 }
 
- 
-
 // This is the main dashboard after a student logs in
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
@@ -124,33 +122,63 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
   return (
     <div
       style={{
+
+        // Make the home page full screen just like the landing page
         width: '100vw',
-        minHeight: '100vh',          // allow content to grow
+        height: '100%',
+        overflow: 'hidden',
+
+        // Keep the same WSU colors
         background: 'linear-gradient(135deg, #981E32 0%, #5C1A24 100%)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start',    // don't vertically center long content
-        padding: 120,
+        alignItems: 'center',
+        padding: 40,
         boxSizing: 'border-box',
-        overflowY: 'auto',           // allow scroll
       }}
-    > 
+    >  
        {/* This card holds all the tab content */}  
       <Card
+        // style={{
+        //   width: '100%',
+        //   maxWidth: '99.5%',
+        //   height: '100%',
+        //   maxHeight: '99.5%',
+        //   borderRadius: 16,
+        //   boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
+        // }}
         style={{
-          alignItems: 'flex-start',
-          // marginTop: "2%",
           width: '100%',
-          maxWidth: '99.5%',
-          height: '90%',
-          maxHeight: '99.5%',
+          maxWidth: 1300,
+          height: '85vh',
           borderRadius: 16,
           boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',           // ← ADD THIS
+        }}
+        bodyStyle={{                    // ← ADD THIS ENTIRE PROP
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          padding: '16px 24px',
+          minHeight: 0,
         }}
       >
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minWidth: 0,
+            paddingRight: 8,
+          }}
+        >
         {/* Tabs help organize the dashboard into sections */}
         <Tabs
           defaultActiveKey="home"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}  
           items={[
             {
               key: 'home',
@@ -175,6 +203,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               children: (
                 <>
                   <Title level={4}>Roadmap</Title>
+                  <div style={{ height: '100%', overflowY: 'auto', paddingRight: 8 }}>
                   {/* AI Advisor Section */}
                   <Title level={5} style={{ marginTop: 8, color: '#981E32' }}>Your AI Advisor</Title>
                   {geminiCourses ? (
@@ -232,6 +261,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                       </Card>
                     ))
                   )}
+                  </div>
                 </>
               ),
             },
@@ -315,6 +345,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             },
           ]}
         />
+        </div>
 
         {/* Logout button resets user state and sends them back to landing page */}
         <Button
