@@ -1,10 +1,13 @@
 import { Tabs, Typography, Button, Card, Input } from 'antd'
+import { useState } from 'react'
 
 const { Title, Text } = Typography
 
 // This is the main dashboard after a student logs in
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
+  const [geminiPrompt, setGeminiPrompt] = useState('')
+
   return (
     <div
       style={{
@@ -96,7 +99,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
         {/* Gemini Assistant */}
         <div
 
-         // Keeps the assistant fixed to the bottom-right of the screen
+         // Keeps the assistant fixed to the bottom right of the screen
         style={{
           position: 'fixed',
           bottom: 30,
@@ -116,11 +119,28 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get more involved in student clubs.
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get more involved with upcoming events
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to connect with professors at WSU within my major
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get involved with more student programs
+            </Button>
+          </div>
+
           {/* Input field where the user types their question */}
           <Input
             size="small"
             placeholder="Ask Gemini..."
             style={{ marginBottom: 8 }}
+            value={geminiPrompt}
+            onChange={(e) => setGeminiPrompt(e.target.value)}
           />
           {/* Button to submit the question to gemini*/}
           <Button
@@ -128,7 +148,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             size="small"
             block
             style={{
-              // Custom WSU theme color
+              // WSU colors
               backgroundColor: '#981E32',
               borderColor: '#981E32',
               fontWeight: 600,
