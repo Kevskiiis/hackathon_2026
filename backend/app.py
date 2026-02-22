@@ -111,9 +111,8 @@ def fetch_student():
 # get an already exsisting event
 @app.route("/fetch-events", methods=["GET"])
 def fetch_events(): 
-    data = request.get_json()
 
-    major = data.get("major")
+    major = request.args.get("major")
 
     response = supabase_client.rpc ("fetch_events", {
         "p_major" : major
@@ -124,9 +123,8 @@ def fetch_events():
 # gets the course history
 @app.route("/fetch-course-history", methods=["GET"])
 def fetch_course_history(): 
-    data = request.get_json()
 
-    user_id = data.get("user_id")
+    user_id = request.args.get("user_id")
 
     response = supabase_client.rpc ("fetch_course_history", {
         "p_user_id" : user_id
