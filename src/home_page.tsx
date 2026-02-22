@@ -1,13 +1,19 @@
-import { Tabs, Typography, Button, Card } from 'antd'
+import { Tabs, Typography, Button, Card, Input } from 'antd'
 
 const { Title, Text } = Typography
 
+// This is the main dashboard after a student logs in
+// It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
   return (
     <div
       style={{
+
+        // Make the home page full screen just like the landing page
         width: '100vw',
         height: '100vh',
+
+        // Keep the same WSU colors
         background: 'linear-gradient(135deg, #981E32 0%, #5C1A24 100%)',
         display: 'flex',
         justifyContent: 'center',
@@ -15,7 +21,8 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
         padding: 40,
         boxSizing: 'border-box',
       }}
-    >
+    >   
+       {/* This card holds all the tab content */}  
       <Card
         style={{
           width: '100%',
@@ -24,6 +31,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
           boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
         }}
       >
+        {/* Tabs help organize the dashboard into sections */}
         <Tabs
           defaultActiveKey="home"
           items={[
@@ -32,9 +40,12 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               label: 'Home',
               children: (
                 <>
+                 {/* Welcome message personalized using student info */}
                   <Title level={3}>
                     Welcome {user.firstName || user.username} 
                   </Title>
+
+                  {/* Show their major so it feels customized */}
                   <Text type="secondary">
                     Major: {user.major || 'Pulled from database'}
                   </Text>
@@ -46,6 +57,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               label: 'Roadmap',
               children: (
                 <>
+                {/* This tab will show required graduation classes */}
                   <Title level={4}>Roadmap</Title>
                   <Text type="secondary">
                     Required classes for graduation will appear here.
@@ -58,6 +70,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               label: 'Events',
               children: (
                 <>
+                {/* This tab will show events related to the student’s major */}
                   <Title level={4}>Events</Title>
                   <Text type="secondary">
                     Major-related events will appear here.
@@ -70,6 +83,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               label: 'Profile',
               children: (
                 <>
+                {/* This tab displays the student's stored information */}
                   <Title level={4}>Profile</Title>
                   <Text><b>Username:</b> {user.username}</Text><br />
                   <Text><b>Name:</b> {user.firstName || '-'} {user.lastName || ''}</Text><br />
@@ -79,7 +93,53 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             },
           ]}
         />
+        {/* Gemini Assistant */}
+        <div
 
+         // Keeps the assistant fixed to the bottom-right of the screen
+        style={{
+          position: 'fixed',
+          bottom: 30,
+          right: 30,
+          width: 300,
+
+          // Ensures it appears above other elements
+          zIndex:1000, 
+        }}
+      >
+        <Card
+          size="small"
+          title="Gemini"
+          style={{
+            borderRadius: 12,
+            // Soft shadow to make it look elevated
+            boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+          }}
+        >
+          {/* Input field where the user types their question */}
+          <Input
+            size="small"
+            placeholder="Ask Gemini..."
+            style={{ marginBottom: 8 }}
+          />
+          {/* Button to submit the question to gemini*/}
+          <Button
+            type="primary"
+            size="small"
+            block
+            style={{
+              // Custom WSU theme color
+              backgroundColor: '#981E32',
+              borderColor: '#981E32',
+              fontWeight: 600,
+            }}
+          >
+            Ask
+          </Button>
+        </Card>
+      </div>
+      
+        {/* Logout button resets user state and sends them back to landing page */}
         <Button
           style={{ marginTop: 20 }}
           onClick={onLogout}
