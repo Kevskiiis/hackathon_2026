@@ -147,20 +147,28 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                 <>
                 {/* This tab will show events related to the student’s major */}
                   <Title level={4}>Events</Title>
-                  
+                  <div style={{ maxHeight: 450, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {
                     events.length > 0 ? (
                       events.map((event: Event, idx) => (
                         <Card key={idx}>
                           <Title level={5}>{event.event_name}</Title>
-                          <Text>{event.event_description}</Text>
-                          <Text type="secondary">{event.event_date} {event.event_time}</Text>
+                          <Text>{event.event_description}</Text><br />
+                          <Text type="secondary">{new Date(event.event_date).toLocaleDateString('en-US', { 
+                                weekday: 'long', 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}</Text>
                         </Card>
                       ))
                     ) : (
                       <Text type="secondary">Major-related events will appear here.</Text>
                     )
                   }
+                  </div>
                 </>
               ),
             },
