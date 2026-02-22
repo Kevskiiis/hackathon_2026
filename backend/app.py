@@ -91,15 +91,22 @@ def add_course_history():
 # get an already exsisting student
 @app.route("/fetch-student", methods=["GET"])
 def fetch_student(): 
-    data = request.get_json()
+    
+    username = request.args.get("username")
+    print(f"Username: '{username}'")
+    print(f"Length: {len(username) if username else 0}")
+    #print("Username received:", username)
 
-    username = data.get("username")
-
-    response = supabase_client.rpc ("fetch_student", {
+    response = supabase_client.rpc("fetch_student",{
         "p_username" : username
     }).execute()
 
-    return jsonify({"data" : response.data}), 200
+    print("Supabase response:", response.data)  # check what supabase returns
+
+    if response.data:  # if a student was found
+        return jsonify({"result": True, "user": response.data[0]}), 200
+    else:
+        return jsonify({"result": False, "message": "User not found"}), 404
 
 # get an already exsisting event
 @app.route("/fetch-events", methods=["GET"])

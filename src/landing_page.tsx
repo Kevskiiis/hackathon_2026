@@ -1,8 +1,23 @@
-import { useState } from 'react'
+import { act, useState } from 'react'
 import { Card, Form, Input, Button, Typography, Segmented, Select } from 'antd'
+import { Spin } from 'antd';
+import axios from "axios";
 
 // We are using title and text from Ant design to make it look good you know.
 const { Title, Text } = Typography
+
+// Delcarations:
+interface FormValues {
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  major?: string;
+}
+
+interface LandingPageProps {
+  setLogin: (value: boolean) => void;
+  setUser: (user: any) => void; // Replace 'any' with a more specific type if possible
+}
 
 // All the majors that are provided at WSU.
 const WSU_MAJORS = [
@@ -58,24 +73,73 @@ const WSU_MAJORS = [
   'Statistics',
 ]
 
-export default function LandingPage({ onSubmit }: { onSubmit: (values: any) => void }) {
+export default function LandingPage({setLogin, setUser}: LandingPageProps) {
   // This keeps track of wther the user is signing up or logging in
-  const [mode, setMode] = useState('Sign Up') 
+  const [mode, setMode] = useState('Sign Up') // "Sign Up" or "Log In"
+  const [isLoading, setIsLoading] = useState(false);  
 
-  //This function runs
-  const onFinish = (values: any) => {
-    // 'values' contains everything the student typed into the form
-    console.log('Submitted:', values)
+  //This function runs:
+  const onFinish = async (values: FormValues) => {
+    console.log("Submitted:", values);
+    setIsLoading(true);
 
-    if (mode === 'Log In') {
-      alert('Looking up your plan...')
-    } else {
-      alert('Generating your academic plan...')
+    try {
+      if (mode === "Log In") {
+        const response = await axios.get(
+          "http://127.0.0.1:5000/fetch-student",
+          {
+            params: { username: values.username }
+          }
+        );
+
+        const data = response.data; // axios stores backend response here
+
+        console.log("Full response:", data)  // add this
+        console.log("data.result:", data.result)
+
+        if (data.result) {
+          setLogin(true);
+          setUser({
+            username: data.user.username,
+            firstName: data.user.first_name,  // map to camelCase for React
+            lastName: data.user.last_name,
+            major: data.user.major
+          });
+          alert("Looking up your plan...");
+        } else {
+          alert(data.message || "User not found.");
+        }
+
+      } else {
+        const response = await axios.post(
+          "http://127.0.0.1:5000/create-student",
+          {
+            username: values.username,
+            first_name: values.firstName,
+            last_name: values.lastName,
+            major: values.major
+          }
+        );
+
+        const data = response.data;
+
+        if (data.result) {
+          setLogin(true);
+          setUser(values);
+          alert("Generating your academic plan...");
+        } else {
+          alert(data.message || "Something went wrong.");
+        }
+      }
+
+    } catch (error) {
+      console.log(error);
+      alert("Server error. Make sure Flask is running.");
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // This is where we pass the user info back to App
-    onSubmit(values)
-  }
 
   return (
     <div
@@ -129,7 +193,6 @@ export default function LandingPage({ onSubmit }: { onSubmit: (values: any) => v
           <Form.Item label="Username" name="username" rules={[{ required: true, message: 'Enter your username' }]}>
             <Input size="large" />
           </Form.Item>
-
           {/* Sign Up ONLY fields */}
           {mode === 'Sign Up' && (
             <>
