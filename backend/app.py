@@ -3,6 +3,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from supabase_client import supabase_client
 
+from gemini_client import client
+from gemini_client import types
+
 
 app = Flask(__name__) #creates the flask app
 CORS(app) # should let react call the flask api
@@ -139,6 +142,39 @@ def fetch_course_catalog():
     response = supabase_client.rpc ("fetch_course_catalog").execute()
 
     return jsonify({"data" : response.data}), 200
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.get_json()
+        user_message = data.get("message")
+
+
+        system_instruction = f"""
+            You are a helpful academic assistant for Washington State Univesity students.
+            When asked about events, clubs, or resources, search the web and provide:
+            - A helpful and informative answer
+            - Specific links to websites, Discord servers, Reddit communities, Instagram pages, etc
+            - Where the student can find more information or resources
+
+            Some specifc resources to initally search through are provided below. Do not use these as the
+            sole resources. Make sure to search in other places as well
+            - https://vcea.wsu.edu/upcoming-events/
+            - https://events.wsu.edu/
+            """
+        response = client.models.generate_content(
+            model = "gemini-2.5-flash",
+            contents = user_message,
+            config = types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            )
+            )
+
+        return jsonify({"response": response.text}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":
