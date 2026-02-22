@@ -1,12 +1,60 @@
-import { Tabs, Typography, Button, Card, Input } from 'antd'
-import { useState } from 'react'
+import { Tabs, Typography, Button, Card, Input, Row, Col, Image} from 'antd'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 const { Title, Text } = Typography
+
+interface Event {
+  event_date: string,
+  event_description: string,
+  event_name: string,
+  event_time: string,
+  event_type: string
+}
 
 // This is the main dashboard after a student logs in
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
   const [geminiPrompt, setGeminiPrompt] = useState('')
+  const [events, setEvents] = useState([])
+  const [courses, setCourses] = useState([]) 
+
+  const LoadEvents = async () => {
+    const result = await axios.get(
+          "http://127.0.0.1:5000/fetch-events",
+          {
+            params: {major: user.major}
+          }
+        );
+    const eventsArray= result.data.data;
+    // console.log(eventsArray); 
+
+    if (eventsArray[0]) {
+      setEvents(eventsArray); 
+    }
+  }
+
+  const LoadCourses = async () => {
+    const result = await axios.get(
+          "http://127.0.0.1:5000/fetch-course-history",
+          {
+            params: {user_id: user.id}
+          }
+        );
+
+    const courses = result.data.data;
+    console.log(result); 
+
+    // if (eventsArray[0]) {
+    //   setEvents(eventsArray); 
+    // }
+  }
+
+  useEffect(() => {
+    LoadEvents();
+    LoadCourses(); 
+  }, []);
+
 
   return (
     <div
@@ -29,7 +77,9 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
       <Card
         style={{
           width: '100%',
-          maxWidth: 900,
+          maxWidth: '99.5%',
+          height: '100%',
+          maxHeight: '99.5%',
           borderRadius: 16,
           boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
         }}
@@ -75,9 +125,20 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                 <>
                 {/* This tab will show events related to the student’s major */}
                   <Title level={4}>Events</Title>
-                  <Text type="secondary">
-                    Major-related events will appear here.
-                  </Text>
+                  
+                  {
+                    events.length > 0 ? (
+                      events.map((event: Event, idx) => (
+                        <Card key={idx}>
+                          <Title level={5}>{event.event_name}</Title>
+                          <Text>{event.event_description}</Text>
+                          <Text type="secondary">{event.event_date} {event.event_time}</Text>
+                        </Card>
+                      ))
+                    ) : (
+                      <Text type="secondary">Major-related events will appear here.</Text>
+                    )
+                  }
                 </>
               ),
             },
@@ -96,6 +157,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
             },
           ]}
         />
+
         {/* Gemini Assistant */}
         <div
 
