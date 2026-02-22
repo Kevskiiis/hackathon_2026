@@ -66,7 +66,9 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
 
     try {
       const response = await axios.post("http://127.0.0.1:5000/chat", {
-        message: geminiPrompt
+        message: geminiPrompt,
+        major: user.major,
+        first_name: user.firsName
       })
       setGeminiResponse(response.data.response)
     } catch (error) {
