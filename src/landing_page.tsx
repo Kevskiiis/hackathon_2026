@@ -60,7 +60,7 @@ const WSU_MAJORS = [
 
 export default function LandingPage({ onSubmit }: { onSubmit: (values: any) => void }) {
   // This keeps track of wther the user is signing up or logging in
-  const [mode, setMode] = useState('Sign Up') // "Sign Up" or "Log In"
+  const [mode, setMode] = useState('Sign Up') 
 
   //This function runs
   const onFinish = (values: any) => {
@@ -101,7 +101,7 @@ export default function LandingPage({ onSubmit }: { onSubmit: (values: any) => v
           width: '100%',
           maxWidth: 520,
 
-          // This just rounds the ednges and shadow to make it look good
+          // This just rounds the edges and shadow to make it look good
           borderRadius: 16,
           boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
         }}
