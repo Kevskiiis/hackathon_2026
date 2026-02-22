@@ -175,6 +175,63 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                 </>
               ),
             },
+            {
+              key: 'assistant',
+              label: 'Gemini Assistant',
+              children: (
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
+
+                  {/* LEFT COLUMN - title, buttons, input, ask button */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <Title level={4}>Gemini Assistant</Title>
+                    <Text type="secondary">
+                      Ask about events, clubs, resources, or anything WSU related.
+                    </Text>
+
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <Button onClick={() => setGeminiPrompt('I want to get more involved in student clubs.')}>
+                        Student clubs
+                      </Button>
+                      <Button onClick={() => setGeminiPrompt('I want to get more involved with upcoming events.')}>
+                        Upcoming events
+                      </Button>
+                      <Button onClick={() => setGeminiPrompt('I want to connect with professors at WSU within my major.')}>
+                        Connect with professors
+                      </Button>
+                      <Button onClick={() => setGeminiPrompt('I want to get involved with more student programs.')}>
+                        Student programs
+                      </Button>
+                    </div>
+
+                    <Input.TextArea
+                      placeholder="Ask Gemini..."
+                      value={geminiPrompt}
+                      onChange={(e) => setGeminiPrompt(e.target.value)}
+                      rows={3}
+                    />
+
+                    <Button
+                      type="primary"
+                      loading={isLoading}
+                      onClick={askGemini}
+                      style={{ backgroundColor: '#981E32', borderColor: '#981E32', fontWeight: 600 }}
+                    >
+                      Ask
+                    </Button>
+                  </div>
+
+                  {/* RIGHT COLUMN - response box */}
+                  <div style={{ flex: 1 }}>
+                    {geminiResponse && (
+                      <Card style={{ maxHeight: 550, overflowY: 'auto' }}>
+                        <ReactMarkdown>{geminiResponse}</ReactMarkdown>
+                      </Card>
+                    )}
+                  </div>
+
+                </div>
+              ),
+            },
           ]}
         />
 
@@ -192,61 +249,7 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
           zIndex:1000, 
         }}
       >
-        <Card
-          size="small"
-          title="Gemini"
-          style={{
-            borderRadius: 12,
-            // Soft shadow to make it look elevated
-            boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
-          }}
-        > 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get more involved in student clubs.
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get more involved with upcoming events
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to connect with professors at WSU within my major
-            </Button>
-            <Button size="small" onClick={() => setGeminiPrompt('')}>
-              I want to get involved with more student programs
-            </Button>
-          </div>
-
-          {/* Input field where the user types their question */}
-          <Input
-            size="small"
-            placeholder="Ask Gemini..."
-            style={{ marginBottom: 8 }}
-            value={geminiPrompt}
-            onChange={(e) => setGeminiPrompt(e.target.value)}
-          />
-          {/* Button to submit the question to gemini*/}
-          <Button
-            type="primary"
-            size="small"
-            block
-            loading ={isLoading}
-            onClick={askGemini}
-            style={{
-              // WSU colors
-              backgroundColor: '#981E32',
-              borderColor: '#981E32',
-              fontWeight: 600,
-            }}
-          >
-            Ask
-          </Button>
-            {/* Response area - only shows when there is a response */}
-            {geminiResponse && (
-              <div style={{ marginTop: 12, maxHeight: 200, overflowY: 'auto', fontSize: 12 }}>
-              <ReactMarkdown>{geminiResponse}</ReactMarkdown>
-              </div>
-            )}
-        </Card>
+    
       </div>
       
         {/* Logout button resets user state and sends them back to landing page */}
