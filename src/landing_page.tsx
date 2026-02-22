@@ -105,7 +105,7 @@ export default function LandingPage({setLogin, setUser}: LandingPageProps) {
             lastName: data.user.last_name,
             major: data.user.major
           });
-          alert("Looking up your plan...");
+          {/*alert("Looking up your plan...");*/}
         } else {
           alert(data.message || "User not found.");
         }
