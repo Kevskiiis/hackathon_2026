@@ -8,6 +8,7 @@ const { Title, Text } = Typography
 
 // Delcarations:
 interface FormValues {
+  id: string;
   username: string;
   firstName?: string;
   lastName?: string;
@@ -100,6 +101,7 @@ export default function LandingPage({setLogin, setUser}: LandingPageProps) {
         if (data.result) {
           setLogin(true);
           setUser({
+            id: data.user.id,
             username: data.user.username,
             firstName: data.user.first_name,  // map to camelCase for React
             lastName: data.user.last_name,

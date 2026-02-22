@@ -1,26 +1,34 @@
-import { Tabs, Typography, Button, Card, Input } from 'antd'
+import { Tabs, Typography, Button, Card, Input, Row, Col, Image} from 'antd'
 import { useState, useEffect } from 'react'
-import ReactMarkdown from 'react-markdown'
 import axios from 'axios'
 
 const { Title, Text } = Typography
 
 interface Event {
-  event_date: string,
-  event_description: string,
-  event_name: string,
-  event_time: string,
-  event_type: string
+  event_date: string;
+  event_description: string;
+  event_name: string;
+  event_time: string;
+  event_type: string;
 }
+
+interface Course {
+  course_description: string;
+  course_id: number;
+  course_name: string;
+  course_prerequisites: string;
+  course_status: 'Enrolled' | 'Passed' | 'Failed' | 'Withdrawed';
+}
+
+ 
 
 // This is the main dashboard after a student logs in
 // It receives the student info from user and a logout function
 export default function HomePage({ user, onLogout }: { user: any; onLogout: () => void }) {
   const [geminiPrompt, setGeminiPrompt] = useState('')
-  const [geminiResponse, setGeminiResponse] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [events, setEvents] = useState([])
-  const [courses, setCourses] = useState([]) 
+  const [courses, setCourses] = useState<Course[]>([])
+  const [catalog, setCatalog] = useState([])
 
   const LoadEvents = async () => {
     const result = await axios.get(
@@ -45,37 +53,31 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
           }
         );
 
-    const courses = result.data.data;
-    console.log(result); 
+    const courses = result.data.data
+    console.log(courses[0])
 
-    // if (eventsArray[0]) {
-    //   setEvents(eventsArray); 
-    // }
+    if (courses[0]) {
+      setCourses(courses) 
+    }
   }
+
+  // const LoadCourseCatalog = async () => {
+  //   const result = await axios.get("http://127.0.0.1:5000/fetch-course-catalog")
+
+  //   const catalog = result.data.data
+
+  //   if (catalog[0]) {
+  //     setCatalog(catalog)
+  //   }
+  // }
 
   useEffect(() => {
     LoadEvents();
+    // LoadCourseCatalog
     LoadCourses(); 
   }, []);
 
 
-  // This function sends the message to Flask and gets Gemini's response
-  const askGemini = async () => {
-    if (!geminiPrompt.trim()) return  // don't send empty messages
-    setIsLoading(true)
-
-    try {
-      const response = await axios.post("http://127.0.0.1:5000/chat", {
-        message: geminiPrompt
-      })
-      setGeminiResponse(response.data.response)
-    } catch (error) {
-      setGeminiResponse("Something went wrong. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  
   return (
     <div
       style={{
@@ -130,11 +132,55 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
               label: 'Roadmap',
               children: (
                 <>
-                {/* This tab will show required graduation classes */}
                   <Title level={4}>Roadmap</Title>
-                  <Text type="secondary">
-                    Required classes for graduation will appear here.
-                  </Text>
+                  {/* Enrolled courses */}
+                  <Title level={5}>Currently Enrolled</Title>
+                  {courses.filter(c => c.course_status === 'Enrolled').length === 0 ? (
+                    <Text type="secondary">No currently enrolled courses.</Text>
+                  ) : (
+                    courses.filter(c => c.course_status === 'Enrolled').map((course, idx) => (
+                      <Card key={idx} style={{ marginBottom: 8 }}>
+                        <b>{course.course_name}</b><br />
+                        <Text type="secondary">Prerequisites: {course.course_prerequisites ? course.course_prerequisites.split(';').join(', ') : 'None'}</Text>
+                      </Card>
+                    ))
+                  )}
+                  {/* Passed courses */}
+                  <Title level={5} style={{ marginTop: 16 }}>Passed</Title>
+                  {courses.filter(c => c.course_status === 'Passed').length === 0 ? (
+                    <Text type="secondary">No passed courses.</Text>
+                  ) : (
+                    courses.filter(c => c.course_status === 'Passed').map((course, idx) => (
+                      <Card key={idx} style={{ marginBottom: 8 }}>
+                        <b>{course.course_name}</b><br />
+                        <Text type="secondary">Prerequisites: {course.course_prerequisites ? course.course_prerequisites.split(';').join(', ') : 'None'}</Text>
+                      </Card>
+                    ))
+                  )}
+                  {/* Failed courses */}
+                  <Title level={5} style={{ marginTop: 16 }}>Failed</Title>
+                  {courses.filter(c => c.course_status === 'Failed').length === 0 ? (
+                    <Text type="secondary">No failed courses.</Text>
+                  ) : (
+                    courses.filter(c => c.course_status === 'Failed').map((course, idx) => (
+                      <Card key={idx} style={{ marginBottom: 8 }}>
+                        <b>{course.course_name}</b><br />
+                        <Text type="secondary">Prerequisites: {course.course_prerequisites ? course.course_prerequisites.split(';').join(', ') : 'None'}</Text>
+                      </Card>
+                    ))
+                  )}
+                  {/* Withdrawed courses */}
+                  <Title level={5} style={{ marginTop: 16 }}>Withdrawed</Title>
+                  {courses.filter(c => c.course_status === 'Withdrawed').length === 0 ? (
+                    <Text type="secondary">No withdrawed courses.</Text>
+                  ) : (
+                    courses.filter(c => c.course_status === 'Withdrawed').map((course, idx) => (
+                      <Card key={idx} style={{ marginBottom: 8 }}>
+                        <b>{course.course_name}</b><br />
+                        <Text type="secondary">Prerequisites: {course.course_prerequisites ? course.course_prerequisites.split(';').join(', ') : 'None'}</Text>
+                      </Card>
+                    ))
+                  )}
                 </>
               ),
             },
@@ -175,63 +221,6 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
                 </>
               ),
             },
-            {
-              key: 'assistant',
-              label: 'Gemini Assistant',
-              children: (
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
-
-                  {/* LEFT COLUMN - title, buttons, input, ask button */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <Title level={4}>Gemini Assistant</Title>
-                    <Text type="secondary">
-                      Ask about events, clubs, resources, or anything WSU related.
-                    </Text>
-
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <Button onClick={() => setGeminiPrompt('I want to get more involved in student clubs.')}>
-                        Student clubs
-                      </Button>
-                      <Button onClick={() => setGeminiPrompt('I want to get more involved with upcoming events.')}>
-                        Upcoming events
-                      </Button>
-                      <Button onClick={() => setGeminiPrompt('I want to connect with professors at WSU within my major.')}>
-                        Connect with professors
-                      </Button>
-                      <Button onClick={() => setGeminiPrompt('I want to get involved with more student programs.')}>
-                        Student programs
-                      </Button>
-                    </div>
-
-                    <Input.TextArea
-                      placeholder="Ask Gemini..."
-                      value={geminiPrompt}
-                      onChange={(e) => setGeminiPrompt(e.target.value)}
-                      rows={3}
-                    />
-
-                    <Button
-                      type="primary"
-                      loading={isLoading}
-                      onClick={askGemini}
-                      style={{ backgroundColor: '#981E32', borderColor: '#981E32', fontWeight: 600 }}
-                    >
-                      Ask
-                    </Button>
-                  </div>
-
-                  {/* RIGHT COLUMN - response box */}
-                  <div style={{ flex: 1 }}>
-                    {geminiResponse && (
-                      <Card style={{ maxHeight: 550, overflowY: 'auto' }}>
-                        <ReactMarkdown>{geminiResponse}</ReactMarkdown>
-                      </Card>
-                    )}
-                  </div>
-
-                </div>
-              ),
-            },
           ]}
         />
 
@@ -249,7 +238,53 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
           zIndex:1000, 
         }}
       >
-    
+        <Card
+          size="small"
+          title="Gemini"
+          style={{
+            borderRadius: 12,
+            // Soft shadow to make it look elevated
+            boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get more involved in student clubs.
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get more involved with upcoming events
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to connect with professors at WSU within my major
+            </Button>
+            <Button size="small" onClick={() => setGeminiPrompt('')}>
+              I want to get involved with more student programs
+            </Button>
+          </div>
+
+          {/* Input field where the user types their question */}
+          <Input
+            size="small"
+            placeholder="Ask Gemini..."
+            style={{ marginBottom: 8 }}
+            value={geminiPrompt}
+            onChange={(e) => setGeminiPrompt(e.target.value)}
+          />
+          {/* Button to submit the question to gemini*/}
+          <Button
+            type="primary"
+            size="small"
+            block
+            style={{
+              // WSU colors
+              backgroundColor: '#981E32',
+              borderColor: '#981E32',
+              fontWeight: 600,
+            }}
+          >
+            Ask
+          </Button>
+        </Card>
       </div>
       
         {/* Logout button resets user state and sends them back to landing page */}
