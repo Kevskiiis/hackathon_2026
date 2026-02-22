@@ -124,26 +124,25 @@ export default function HomePage({ user, onLogout }: { user: any; onLogout: () =
   return (
     <div
       style={{
-
-        // Make the home page full screen just like the landing page
         width: '100vw',
-        height: '100vh',
-
-        // Keep the same WSU colors
+        minHeight: '100vh',          // allow content to grow
         background: 'linear-gradient(135deg, #981E32 0%, #5C1A24 100%)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        padding: 40,
+        alignItems: 'flex-start',    // don't vertically center long content
+        padding: 120,
         boxSizing: 'border-box',
+        overflowY: 'auto',           // allow scroll
       }}
-    >   
+    > 
        {/* This card holds all the tab content */}  
       <Card
         style={{
+          alignItems: 'flex-start',
+          // marginTop: "2%",
           width: '100%',
           maxWidth: '99.5%',
-          height: '100%',
+          height: '90%',
           maxHeight: '99.5%',
           borderRadius: 16,
           boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
