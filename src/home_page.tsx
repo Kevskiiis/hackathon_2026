@@ -1,5 +1,5 @@
 import { Tabs, Typography, Button, Card, Input } from 'antd'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import axios from 'axios'
 
