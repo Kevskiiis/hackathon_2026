@@ -94,9 +94,17 @@ export default function LandingPage({setLogin, setUser}: LandingPageProps) {
 
         const data = response.data; // axios stores backend response here
 
+        console.log("Full response:", data)  // add this
+        console.log("data.result:", data.result)
+
         if (data.result) {
           setLogin(true);
-          setUser(data.user); // adjust based on backend return
+          setUser({
+            username: data.user.username,
+            firstName: data.user.first_name,  // map to camelCase for React
+            lastName: data.user.last_name,
+            major: data.user.major
+          });
           alert("Looking up your plan...");
         } else {
           alert(data.message || "User not found.");
@@ -125,7 +133,7 @@ export default function LandingPage({setLogin, setUser}: LandingPageProps) {
       }
 
     } catch (error) {
-      console.error(error);
+      console.log(error);
       alert("Server error. Make sure Flask is running.");
     } finally {
       setIsLoading(false);
