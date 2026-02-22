@@ -80,7 +80,7 @@ export default function LandingPage({setLogin, setUser}: LandingPageProps) {
 
   //This function runs:
   const onFinish = async (values: FormValues) => {
-    console.log("Submitted:", values);
+    console.log(values);
     setIsLoading(true);
 
     try {
