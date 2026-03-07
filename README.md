@@ -1,4 +1,7 @@
-# React + Vite
+# New Coug Advisor
+New Coug Advisor provides a centralized hub of resources for new students at WSU. From personalized class advising to discovering campus events and important resources, the platform helps incoming students navigate university life and quickly find the information they need to get started.
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
